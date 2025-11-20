@@ -286,6 +286,31 @@ ALTER TABLE Itens_Pedido ADD CONSTRAINT FK_IP_Pedido
     FOREIGN KEY (FK_Pedido_ID) REFERENCES Pedido (Pedido_ID)
     ON DELETE CASCADE;
 
+ALTER TABLE Auditoria_Pedido ADD CONSTRAINT FK_Auditoria_Pedido
+    FOREIGN KEY (Pedido_ID) REFERENCES Pedido (Pedido_ID)
+    ON DELETE CASCADE;
+ALTER TABLE Log_Entregas_Atrasadas ADD CONSTRAINT FK_Log_Entrega_Produto
+    FOREIGN KEY (Produto_ID) REFERENCES Produto (Produto_ID)
+    ON DELETE CASCADE;
+
+ALTER TABLE VENDA ADD CONSTRAINT FK_Venda_Produto
+    FOREIGN KEY (FK_Produto_ID) REFERENCES Produto (Produto_ID)
+    ON DELETE RESTRICT;
+ALTER TABLE VENDA ADD CONSTRAINT FK_Venda_Cliente
+    FOREIGN KEY (FK_Cliente_ID) REFERENCES Cliente (Cliente_ID)
+    ON DELETE RESTRICT;
+ALTER TABLE Pagamento_Venda ADD CONSTRAINT FK_Pagamento_Venda
+    FOREIGN KEY (FK_Venda_ID) REFERENCES VENDA (Venda_ID)
+    ON DELETE CASCADE;
+ALTER TABLE ALUGUALO ADD CONSTRAINT FK_Aluguel_Produto
+    FOREIGN KEY (FK_Produto_ID) REFERENCES Produto (Produto_ID)
+    ON DELETE RESTRICT;
+ALTER TABLE ALUGUALO ADD CONSTRAINT FK_Aluguel_Cliente
+    FOREIGN KEY (FK_Cliente_ID) REFERENCES Cliente (Cliente_ID)
+    ON DELETE RESTRICT;
+ALTER TABLE Pagamento_Aluguel ADD CONSTRAINT FK_Pagamento_Aluguel
+    FOREIGN KEY (FK_Aluguel_ID) REFERENCES ALUGUALO (Aluguel_ID)
+    ON DELETE CASCADE;
 
 -- ==========================================================
 -- 3. INSERÇÃO DE DADOS (DML) - Corrigida
