@@ -209,7 +209,33 @@ CREATE TABLE TIPO_PROTECAO_DO_MOVEIS(
     Custo_Adicional DECIMAL(10,2) CHECK (Custo_Adicional >= 0)
 );
 
+CREATE TABLE TIPO_ACESSORIOS_MOVEIS(
+    Acessorio_ID SERIAL PRIMARY KEY,
+    Nome VARCHAR(100) NOT NULL,
+    Custo_Adicional DECIMAL(10,2) CHECK (Custo_Adicional >= 0)
+);
 
+CREATE TABLE TIPO_DESIGNER_INTERNO(
+    Designer_ID SERIAL PRIMARY KEY,
+    Nome VARCHAR(100) NOT NULL,
+    Especialidade VARCHAR(100)
+);
+CREATE TABLE TIPO_MARCA_MOVEIS(
+    Marca_ID SERIAL PRIMARY KEY,
+    Nome VARCHAR(100) NOT NULL,
+    Pais_Origem VARCHAR(100)
+);
+
+CREATE TABLE TIPO_ESTILO_MOVEIS(
+    Estilo_ID SERIAL PRIMARY KEY,
+    Nome VARCHAR(100) NOT NULL,
+    Descricao VARCHAR(255)
+);
+CREATE TABLE TIPO_COR_MOVEIS(
+    Cor_ID SERIAL PRIMARY KEY,
+    Nome VARCHAR(50) NOT NULL,
+    Codigo_Hexadecimal VARCHAR(7) UNIQUE NOT NULL
+);
 
 
 -- ==========================================================
