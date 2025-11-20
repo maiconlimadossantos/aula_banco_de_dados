@@ -133,6 +133,84 @@ CREATE TABLE Log_Entregas_Atrasadas (
     Data_Log TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE Tranporte(
+transporte_id SERIAL PRIMARY KEY,
+Nome VARCHAR(100) NOT NULL,
+Tipo_Pedido_Numerico NUMERIC NOT NULL,
+tipo_de_TRANSPORTE VARCHAR(50) NOT NULL,
+);
+
+CREATE TABLE Rota_Transporte(
+    Rota_Transporte_ID SERIAL PRIMARY KEY,
+    transporte_id INTEGER NOT NULL,
+    Descricao_Rota VARCHAR(255) NOT NULL,
+    Distancia_km NUMERIC CHECK (Distancia_km > 0
+);
+
+CREATE TABLE Veiculo_Transporte(
+    Veiculo_Transporte_ID SERIAL PRIMARY KEY,
+    transporte_id INTEGER NOT NULL,
+    Placa VARCHAR(20) UNIQUE NOT NULL,
+    Modelo VARCHAR(100) NOT NULL,
+    Capacidade_kg NUMERIC CHECK (Capacidade_kg > 0)
+);
+
+CREATE TABLE Motorista_Transporte(
+    Motorista_Transporte_ID SERIAL PRIMARY KEY,
+    transporte_id INTEGER NOT NULL,
+    Nome VARCHAR(100) NOT NULL,
+    CNH VARCHAR(20) UNIQUE NOT NULL,
+    Telefone VARCHAR(20)
+);
+
+CREATE TABLE VENDA(
+    Venda_ID SERIAL PRIMARY KEY,
+    FK_Produto_ID INTEGER NOT NULL,
+    FK_Cliente_ID INTEGER NOT NULL,
+    Data_Venda DATE DEFAULT CURRENT_DATE,
+    Quantidade INTEGER NOT NULL CHECK (Quantidade > 0),
+    Preco_Total DECIMAL(10,2) NOT NULL
+);
+CREATE TABLE Pagamento_Venda(
+    Pagamento_ID SERIAL PRIMARY KEY,
+    FK_Venda_ID INTEGER NOT NULL,
+    Metodo_Pagamento VARCHAR(50) NOT NULL,
+    Status_Pagamento_Cod NUMERIC NOT NULL,
+    Data_Pagamento DATE
+);
+
+CREATE ALUGUALO(
+    Aluguel_ID SERIAL PRIMARY KEY,
+    FK_Produto_ID INTEGER NOT NULL,
+    FK_Cliente_ID INTEGER NOT NULL,
+    Data_Inicio DATE NOT NULL,
+    Data_Fim DATE NOT NULL,
+    Preco_Diario DECIMAL(10,2) NOT NULL
+);
+CREATE TABLE Pagamento_Aluguel(
+    Pagamento_Aluguel_ID SERIAL PRIMARY KEY,
+    FK_Aluguel_ID INTEGER NOT NULL,
+    Metodo_Pagamento VARCHAR(50) NOT NULL,
+    Status_Pagamento_Cod NUMERIC NOT NULL,
+    Data_Pagamento DATE
+);
+
+CREATE TIPO_ESTABELRECIMENTO(
+    Estabelecimento_ID SERIAL PRIMARY KEY,
+    Nome VARCHAR(100) NOT NULL,
+    Endereco VARCHAR(255) NOT NULL,
+    Telefone VARCHAR(20),
+    Email VARCHAR(100) UNIQUE
+);
+
+CREATE TIPO_PROTECAO_DO_MOVEIS(
+    Protecao_ID SERIAL PRIMARY KEY,
+    Descricao VARCHAR(255) NOT NULL,
+    Custo_Adicional DECIMAL(10,2) CHECK (Custo_Adicional >= 0)
+);
+
+
+
 
 -- ==========================================================
 -- 2. CHAVES ESTRANGEIRAS
