@@ -628,6 +628,100 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION foi_alugado(p_produto_id INTEGER)
+RETURNS BOOLEAN AS $$
+DECLARE
+    existe BOOLEAN;
+BEGIN
+    SELECT EXISTS (
+        SELECT 1 FROM ALUGUALO WHERE FK_Produto_ID = p_produto_id
+    ) INTO existe;
+
+    RETURN existe;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION foi_vendido(p_produto_id INTEGER)
+RETURNS BOOLEAN AS $$
+DECLARE
+    existe BOOLEAN;
+BEGIN
+    SELECT EXISTS (
+        SELECT 1 FROM VENDA WHERE FK_Produto_ID = p_produto_id
+    ) INTO existe;
+
+    RETURN existe;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION verificar_produto_utilizacao(p_produto_id INTEGER)
+RETURNS TABLE (
+    Foi_Vendido BOOLEAN,
+    Foi_Alugado BOOLEAN
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        foi_vendido(p_produto_id) AS Foi_Vendido,
+        foi_alugado(p_produto_id) AS Foi_Alugado;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION calcular_preco_aluguel_total(p_produto_id INTEGER, p_data_inicio DATE, p_data_fim DATE)
+RETURNS DECIMAL(10,2) AS $$
+DECLARE
+    preco_diario DECIMAL(10,2);
+    dias_aluguel INTEGER;
+    preco_total DECIMAL(10,2);
+BEGIN
+    SELECT Preco_Diario INTO preco_diario
+    FROM ALUGUALO
+    WHERE FK_Produto_ID = p_produto_id
+      AND p_data_inicio >= Data_Inicio
+      AND p_data_fim <= Data_Fim;
+
+    IF preco_diario IS NULL THEN
+        RETURN 0;
+    END IF;
+
+    dias_aluguel := (p_data_fim - p_data_inicio) + 1; -- Inclui o dia final
+    preco_total := preco_diario * dias_aluguel;
+
+    RETURN preco_total;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION calcular_preco_venda_total(p_produto_id INTEGER, p_quantidade INTEGER)
+RETURNS DECIMAL(10,2) AS $$
+DECLARE
+    preco_unitario DECIMAL(10,2);
+    preco_total DECIMAL(10,2);
+BEGIN
+    SELECT Preco_Total / Quantidade INTO preco_unitario
+    FROM VENDA
+    WHERE FK_Produto_ID = p_produto_id;
+
+    IF preco_unitario IS NULL THEN
+        RETURN 0;
+    END IF;
+
+    preco_total := preco_unitario * p_quantidade;
+
+    RETURN preco_total;
+END;
+$$ LANGUAGE plpgsql;
+CREATE OR reaplace funtion Rotas_de_Transporte_efeitas(p_transporte_id INTEGER)
+RETURNS integer AS $$
+DECLARE
+    total_rotas INTEGER;
+BEGIN
+SELECT COUNT(*) INTO total_rotas
+FROM Rota_Transporte
+WHERE transporte_id = p_transporte_id;
+RETURN total_rotas;
+END;
+$$ LANGUAGE plpgsql;
 
 -- ==========================================================
 -- 6. VIEWS (Corrigidas)
