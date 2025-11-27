@@ -763,3 +763,77 @@ JOIN Peca_Processo ppx ON ppx.FK_Peca_ID = pc.Peca_ID
 JOIN Processo_Producao pp ON pp.Processo_ID = ppx.FK_Processo_ID
 WHERE ppx.Status_Cod IS DISTINCT FROM 2; -- 2 = Finalizado
 
+CREATE OR REPLACE VIEW vw_clientes_compras AS
+SELECT 
+    c.Cliente_ID,
+    c.Nome AS Cliente,
+    COUNT(DISTINCT v.Venda_ID) AS Total_Vendas,
+    COUNT(DISTINCT a.Aluguel_ID) AS Total_Alugueis
+FROM Cliente c
+LEFT JOIN VENDA v ON v.FK_Cliente_ID = c.Cliente_ID
+LEFT JOIN ALUGUALO a ON a.FK_Cliente_ID = c.Cliente_ID
+GROUP BY c.Cliente_ID, c.Nome;
+-- VIEW 3: Produtos e seus Materiais (Mantida)
+CREATE OR REPLACE VIEW vw_produtos_materiais AS
+SELECT 
+    pr.Produto_ID,
+    pr.Nome AS Produto,
+    m.Material_ID,
+    m.Nome AS Material,
+    m.Fornecedor,
+    m.Custo_Unitario
+FROM Produto pr 
+JOIN Peca pc ON pc.FK_Produto_ID = pr.Produto_ID
+JOIN Material m ON pc.FK_Material_ID = m.Material_ID;
+
+-- VIEW 4: Entregas Pendentes (Mantida)
+CREATE OR REPLACE VIEW vw_entregas_pendentes AS
+SELECT 
+    e.Entrega_ID,
+    pr.Nome AS Produto,
+    e.Data_Envio,
+    e.Destino,
+    e.Status_Entrega_Cod
+FROM Entrega e  
+JOIN Produto pr ON e.FK_Produto_ID = pr.Produto_ID
+WHERE e.Status_Entrega_Cod <> 3; -- Supondo 3 = Entregue    
+CREATE OR REPLACE VIEW vw_ACESSORIOS_PROTECOES_DESIGNERS AS
+SELECT 
+    a.Acessorio_ID,
+    a.Nome AS Acessorio,
+    a.Custo_Adicional AS Custo_Acessorio,
+    p.Protecao_ID,
+    p.Descricao AS Protecao,
+    p.Custo_Adicional AS Custo_Protecao,
+    d.Designer_ID,
+    d.Nome AS Designer,
+    d.Especialidade
+FROM TIPO_ACESSORIOS_MOVEIS a
+CROSS JOIN TIPO_PROTECAO_DO_MOVEIS p
+CROSS JOIN TIPO_DESIGNER_INTERNO d;
+-- VIEW 5: Transportes e suas Rotas (Mantida)
+CREATE OR REPLACE VIEW vw_transportes_rotas AS
+SELECT 
+    t.transporte_id,
+    t.Nome AS Transporte,
+    r.Rota_Transporte_ID,
+    r.Descricao_Rota,
+    r.Distancia_km
+FROM Tranporte t
+JOIN Rota_Transporte r ON r.transporte_id = t.transporte_id;
+
+CRATE OR REPLACE VIEW VW_DETALHES_FOI_Itens_Pedido AS
+SELECT 
+    I.FK_Produto_ID ,
+    I.FK_Pedido_ID ,
+    I.Quantidade ,
+    I.Preco_Unitario ,
+    P.Nome AS Nome_Produto,
+    C.Nome AS Nome_Cliente,
+    PED.Data_Pedido
+FROM Itens_Pedido I
+JOIN Produto P ON I.FK_Produto_ID = P.Produto_ID
+JOIN Pedido PED ON I.FK_Pedido_ID = PED.Pedido_ID
+JOIN Cliente C ON PED.FK_Cliente_ID = C.Cliente_ID;
+
+
