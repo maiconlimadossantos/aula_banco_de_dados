@@ -376,6 +376,30 @@ INSERT INTO Peca_Processo (FK_Peca_ID, FK_Processo_ID, Status_Cod, Tempo_Real_Da
 (902, 201, 1, '2025-10-01'), -- Perna: Corte (Em Andamento)
 (902, 203, 2, '2025-10-02'); -- Perna: Acabamento (Finalizado) - Erro de lógica, processo 203 é acabamento/polimento. Status 2 = Finalizado.
 
+INSERT INTO Auditoria_Pedido (Auditoria_ID, Pedido_ID, Data_Registro, Acao) VALUES
+(1001, 401, '2025-09-15 10:00:00', 'INSERIDO'),
+(1002, 402, '2025-09-20 11:30:00', 'INSERIDO');
+(1002, 402, '2025-09-20 11:30:00', 'INSERIDO');
+
+INSERT INTO Log_Entregas_Atrasadas (Log_ID, Produto_ID, Data_Entrega, Dias_Atraso, Observacao, Data_Log) VALUES
+(2001, 501, '2025-10-15', 5, 'Entrega atrasada devido a condições climáticas.', '2025-10-15 14:00:00'),
+(2002, 502, '2025-10-18', 3, 'Entrega atrasada por falta de material.', '2025-10-18 09:30:00'),
+(2001, 501, '2025-10-20', 7, 'Entrega atrasada devido a problemas logísticos.', '2025-10-20 15:00:00');
+
+INSERT INTO Tranporte(transporte_id, Nome, Tipo_Pedido_Numerico, tipo_de_TRANSPORTE) VALUES
+(1, 'TransLog', 1, 'Rodoviário'),
+(2, 'FastShip', 2, 'Aéreo'),
+(3, 'SeaCargo', 1, 'Marítimo');
+
+INSERT INTO Rota_Transporte(Rota_Transporte_ID, transporte_id, Descricao_Rota, Distancia_km) VALUES
+(1, 1, 'São Paulo - Rio de Janeiro', 430),
+(2, 2, 'São Paulo - Brasília', 1015),
+(3, 3, 'Rio de Janeiro - Santos', 300);
+
+INSERT INTO Veiculo_Transporte(Veiculo_Transporte_ID, transporte_id, Placa, Modelo, Capacidade_kg) VALUES
+(1, 1, 'ABC-1234', 'Caminhão Volvo', 15000),
+(2, 2, 'DEF-5678', 'Avião Cargo Boeing', 50000),
+(3, 3, 'GHI-9012', 'Navio Cargueiro', 200000);
 -- ==========================================================
 -- 4. FUNÇÕES E TRIGGERS (PL/pgSQL) - Funções Corrigidas
 -- (As funções que dependiam de FK_Produto_ID em Pedido foram corrigidas)
