@@ -201,6 +201,7 @@ CREATE TABLE TIPO_ESTABELRECIMENTO(
     Endereco VARCHAR(255) NOT NULL,
     Telefone VARCHAR(20),
     Email VARCHAR(100) UNIQUE
+    categoria VARCHAR(50
 );
 
 CREATE TABLE TIPO_PROTECAO_DO_MOVEIS(
@@ -319,7 +320,8 @@ ALTER TABLE Pagamento_Aluguel ADD CONSTRAINT FK_Pagamento_Aluguel
 -- CLIENTE
 INSERT INTO Cliente (Cliente_ID, Nome, CPF_CNPJ, Endereco, Email, Telefone) VALUES
 (1, 'João Silva', '123.456.789-00', 'Rua A, 100', 'joao.silva@email.com', '(11) 98765-4321'),
-(2, 'Móveis & Cia', '00.111.222/0001-33', 'Av. B, 500', 'contato@moveiscia.com.br', '(21) 3333-2222');
+(2, 'Móveis & Cia', '00.111.222/0001-33', 'Av. B, 500', 'contato@moveiscia.com.br', '(21) 3333-2222'),
+(3, 'moveis & eletros', '235.250.621-00', 'Rua Rio Grande do Norte n.56', 'moveis&eletros@email.com.br', '(31) 99876-5432');
 
 -- MATERIAL
 INSERT INTO Material (Material_ID, Nome, Fornecedor, Tipo_Material_Cod, Custo_Unitario) VALUES
@@ -336,39 +338,51 @@ INSERT INTO Processo_Producao (Processo_ID, Etapa_Cod, Ordem, Descricao, Tempo_E
 -- EMBALAGEM
 INSERT INTO Embalagem (Embalagem_ID, Tipo_Embalagem, Protecao_Termica, Etiqueta_Rastreamento) VALUES
 (301, 'Caixa de Papelão Reforçada', TRUE, 'BR123456789'),
-(302, 'Pallet Encaixotado', FALSE, 'BR987654321');
+(302, 'Pallet Encaixotado', FALSE, 'BR987654321'),
+(303, 'Embalagem Plástica Bolha', TRUE, 'BR112233445');
 
 -- PRODUTO
 INSERT INTO Produto (Produto_ID, Nome, Status_Producao, Tipo_Produto, Data_Criacao, Dimensoes_m2, FK_Embalagem_ID) VALUES
 (501, 'Mesa Lateral Padrão', 'Em Produção', 'Serie', '2025-09-01', 0.65, 301),
-(502, 'Armário Sob Medida - Cliente 2', 'Aguardando Projeto', 'Sob Medida', '2025-09-22', 1.80, 302);
+(502, 'Armário Sob Medida - Cliente 2', 'Aguardando Projeto', 'Sob Medida', '2025-09-22', 1.80, 302),
+(503, 'Cadeira de Escritório Ergonômica', 'Produzido', 'Serie', '2025-08-15', 0.50, 303);
 
 -- PEDIDO (Corrigida a remoção do FK_Produto_ID)
 INSERT INTO Pedido (Pedido_ID, FK_Cliente_ID, Data_Pedido, Tipo_Pedido_Numerico) VALUES
 (401, 1, '2025-09-15', 1),
-(402, 2, '2025-09-20', 2);
+(402, 2, '2025-09-20', 2),
+(403, 3, '2025-09-25', 1);
 
 -- ITENS_PEDIDO (Corrigida a tabela e a inclusão de Quantidade e Preco_Unitario)
 INSERT INTO Itens_Pedido (FK_Produto_ID, FK_Pedido_ID, Quantidade, Preco_Unitario) VALUES
 (501, 401, 1, 350.00), -- 1 Mesa Lateral no Pedido 401
-(502, 402, 1, 2500.00); -- 1 Armário no Pedido 402
+(502, 402, 1, 2500.00), -- 1 Armário no Pedido 402
+(503, 403, 2, 450.00); -- 2 Cadeiras no Pedido 403
 
 -- PROJETO (Corrigida a remoção do FK_Material_ID)
 INSERT INTO Projeto (Projeto_ID, Descricao, Designer, Software_Utilizado, Data_Conclusao, Data_Inicio, FK_Produto_ID) VALUES
-(601, 'Projeto detalhado para Armário Sob Medida.', 'Ana Souza', 'AutoCAD', '2025-09-25', '2025-09-21', 502);
+(601, 'Projeto detalhado para Armário Sob Medida.', 'Ana Souza', 'AutoCAD', '2025-09-25', '2025-09-21', 502),
+(602, 'Design inicial para Mesa Lateral Padrão.', 'Pedro Rocha', 'SketchUp', '2025-09-10', '2025-09-01', 501),
+(603, 'Revisão do projeto da Mesa Lateral.', 'Carla Dias', 'SketchUp', '2025-09-15', '2025-09-11', 501);
 
 -- MONTAGEM
 INSERT INTO Montagem (Montagem_ID, Responsavel, Data_Montagem, Aprovado_QC, FK_Produto_ID) VALUES
-(701, 'Carlos Mendes', '2025-10-05', TRUE, 501);
+(701, 'Carlos Mendes', '2025-10-05', TRUE, 501),
+(702, 'Lucas Pereira', NULL, NULL, 502),
+(703, 'Mariana Lima', '2025-10-10', FALSE, 501);
+
 
 -- ENTREGA
 INSERT INTO Entrega (Entrega_ID, Data_Envio, Destino, Status_Entrega_Cod, FK_Produto_ID) VALUES
-(801, '2025-10-06', 'Rua A, 100 - Cliente 1', 1, 501);
+(801, '2025-10-06', 'Rua A, 100 - Cliente 1', 1, 501),
+(802, '2025-10-12', 'Av. B, 500 - Cliente 2', 0, 502),
+(803, '2025-10-15', 'Rua Rio Grande do Norte n.56 - Cliente 3', 2, 503);
 
 -- PEÇA
 INSERT INTO Peca (Peca_ID, Nome, Tipo_Processo_Cod, Medidas, FK_Produto_ID, FK_Material_ID) VALUES
 (901, 'Tampo da Mesa', 1, '650x650x15', 501, 101), -- MDF Branco
-(902, 'Perna da Mesa (x4)', 2, '600x50x50', 501, 103); -- Madeira Maciça Carvalho (Tipo_Material_Cod 2)
+(902, 'Perna da Mesa (x4)', 2, '600x50x50', 501, 103), -- Madeira Maciça Carvalho (Tipo_Material_Cod 2)
+(903, 'Porta do Armário', 1, '2000x600x18', 502, 101); -- MDF Branco
 
 -- PECA_PROCESSO
 INSERT INTO Peca_Processo (FK_Peca_ID, FK_Processo_ID, Status_Cod, Tempo_Real_Data) VALUES
@@ -400,6 +414,68 @@ INSERT INTO Veiculo_Transporte(Veiculo_Transporte_ID, transporte_id, Placa, Mode
 (1, 1, 'ABC-1234', 'Caminhão Volvo', 15000),
 (2, 2, 'DEF-5678', 'Avião Cargo Boeing', 50000),
 (3, 3, 'GHI-9012', 'Navio Cargueiro', 200000);
+
+
+INSERT INTO Motorista_Transporte(Motorista_Transporte_ID, transporte_id, Nome, CNH, Telefone) VALUES
+(1, 1, 'João Carvalho', 'MG1234567', '(31) 91234-5678'),
+(2, 2, 'Maria Fernandes', 'SP7654321', '(11) 99876-5432'),
+(3, 3, 'Carlos Silva', 'RJ1122334', '(21) 98765-4321');
+
+INSERT INTO VENDA(Venda_ID, FK_Produto_ID, FK_Cliente_ID, Data_Venda, Quantidade, Preco_Total) VALUES
+(1, 503, 3, '2025-10-01', 2, 900.00),
+(2, 501, 1, '2025-10-05', 1, 350.00),
+(3, 502, 2, '2025-10-10', 1, 2500.00);
+
+INSERT INTO Pagamento_Venda(Pagamento_ID, FK_Venda_ID, Metodo_Pagamento, Status_Pagamento_Cod, Data_Pagamento) VALUES
+(1, 1, 'Cartão de Crédito', 1, '2025-10-02'),
+(2, 2, 'Boleto Bancário', 0, NULL),
+(3, 3, 'Transferência Bancária', 1, '2025-10-11');
+
+INSERT INTO ALUGUALO(Aluguel_ID, FK_Produto_ID, FK_Cliente_ID, Data_Inicio, Data_Fim, Preco_Diario) VALUES
+(1, 501, 1, '2025-10-15', '2025-10-20', 50.00),
+(2, 503, 3, '2025-10-18', '2025-10-25', 30.00),
+(3, 502, 2, '2025-10-22', '2025-10-30', 80.00);
+
+INSERT INTO Pagamento_Aluguel(Pagamento_Aluguel_ID, FK_Aluguel_ID, Metodo_Pagamento, Status_Pagamento_Cod, Data_Pagamento) VALUES
+(1, 1, 'Cartão de Crédito', 1, '2025-10-21'),
+(2, 2, 'Boleto Bancário', 0, NULL),
+(3, 3, 'Transferência Bancária', 1, '2025-10-31');
+
+INSERT INTO TIPO_ESTABELRECIMENTO(Estabelecimento_ID,nome,Endereco,telefone,email,categoria) VALUES
+(1, 'moveis & eletros','Rua Rio Grande do Norte n.56','(31) 99876-5432', 'moveis&eletros@email.com.br','loja'),
+(2, 'João Silva', 'Rua A, 100', '(11) 98765-4321','joao.silva@email.com','Pessoa_fisica' ,),
+(3, 'Apple' ,'EUA rua t,120','(32) 45249573','Apple@email.com.br','industria' );
+
+INSERT INTO TIPO_PROTECAO_DO_MOVEIS(Protecao_ID, Descricao, Custo_Adicional) VALUES
+(1, 'Capa Protetora de Tecido', 25.00),
+(2, 'Película Protetora de Vidro', 15.00),
+(3, 'Revestimento Anti-Riscos', 30.00);
+
+INSERT INTO TIPO_ACESSORIOS_MOVEIS(Acessorio_ID, Nome, Custo_Adicional) VALUES
+(1, 'Puxadores de Alumínio', 10.00),
+(2, 'Rodízios para Móveis', 20.00),
+(3, 'Suportes Metálicos', 15.00);
+
+INSERT INTO TIPO_DESIGNER_INTERNO(Designer_ID, Nome, Especialidade) VALUES
+(1, 'Ana Souza', 'Móveis Sob Medida'),
+(2, 'Pedro Rocha', 'Design de Interiores'),
+(3, 'Carla Dias', 'Soluções Funcionais');
+
+INSERT INTO TIPO_MARCA_MOVEIS(Marca_ID, Nome, Pais_Origem) VALUES
+(1, 'FurniCraft', 'Brasil'),
+(2, 'WoodWorks', 'Estados Unidos'),
+(3, 'DecoraHome', 'Itália');
+
+INSERT INTO TIPO_ESTILO_MOVEIS(Estilo_ID, Nome, Descricao) VALUES
+(1, 'Moderno', 'Linhas retas e design minimalista'),
+(2, 'Rústico', 'Uso de madeira natural e acabamentos rústicos'),
+(3, 'Clássico', 'Detalhes ornamentados e design tradicional');
+
+INSERT INTO TIPO_COR_MOVEIS(Cor_ID, Nome, Codigo_Hexadecimal) VALUES
+(1, 'Branco', '#FFFFFF'),
+(2, 'Preto', '#000000'),
+(3, 'Vermelho', '#FF0000');
+
 -- ==========================================================
 -- 4. FUNÇÕES E TRIGGERS (PL/pgSQL) - Funções Corrigidas
 -- (As funções que dependiam de FK_Produto_ID em Pedido foram corrigidas)
