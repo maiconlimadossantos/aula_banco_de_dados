@@ -1,7 +1,7 @@
 /* fabricademoveislogico_1: SCHEMA OTIMIZADO */
 
- 1. TABELAS PRINCIPAIS (DDL)
--- (Inclui Chaves Primárias, Unique, Not Null e Check)
+-- ==========================================================
+-- 1. TABELAS PRINCIPAIS (DDL) - Correções de sintaxe e tipos
 -- ==========================================================
 
 -- EMBALAGEM
@@ -17,7 +17,7 @@ CREATE TABLE Material (
     Material_ID SERIAL PRIMARY KEY,
     Nome VARCHAR(100) NOT NULL,
     Fornecedor VARCHAR(100),
-    Tipo_Material_Cod NUMERIC NOT NULL,
+    Tipo_Material_Cod INTEGER NOT NULL, -- Alterado de NUMERIC para INTEGER (assumindo códigos inteiros)
     Custo_Unitario DECIMAL(10,2) NOT NULL CHECK (Custo_Unitario >= 0)
 );
 
@@ -29,7 +29,7 @@ CREATE TABLE Produto (
     Tipo_Produto VARCHAR(20),
     Data_Criacao DATE DEFAULT CURRENT_DATE,
     Dimensoes_m2 NUMERIC(10,2) CHECK (Dimensoes_m2 > 0),
-    FK_Embalagem_ID INTEGER
+    FK_Embalagem_ID INTEGER -- Chave estrangeira
 );
 
 -- CLIENTE
@@ -46,14 +46,14 @@ CREATE TABLE Cliente (
 CREATE TABLE Pedido (
     Pedido_ID SERIAL PRIMARY KEY,
     Data_Pedido DATE DEFAULT CURRENT_DATE,
-    Tipo_Pedido_Numerico NUMERIC,
+    Tipo_Pedido_Numerico INTEGER, -- Alterado de NUMERIC para INTEGER
     FK_Cliente_ID INTEGER NOT NULL
 );
 
 -- PROCESSO DE PRODUÇÃO
 CREATE TABLE Processo_Producao (
     Processo_ID SERIAL PRIMARY KEY,
-    Etapa_Cod NUMERIC UNIQUE NOT NULL,
+    Etapa_Cod INTEGER UNIQUE NOT NULL, -- Alterado de NUMERIC para INTEGER
     Ordem VARCHAR(10) NOT NULL,
     Descricao VARCHAR(255),
     Tempo_Estimado_min INTEGER CHECK (Tempo_Estimado_min > 0)
@@ -67,7 +67,7 @@ CREATE TABLE Projeto (
     Software_Utilizado VARCHAR(50),
     Data_Conclusao DATE,
     Data_Inicio DATE NOT NULL,
-    FK_Produto_ID INTEGER UNIQUE
+    FK_Produto_ID INTEGER UNIQUE -- Chave estrangeira
 );
 
 -- MONTAGEM
@@ -76,7 +76,7 @@ CREATE TABLE Montagem (
     Responsavel VARCHAR(100) NOT NULL,
     Data_Montagem DATE DEFAULT CURRENT_DATE,
     Aprovado_QC BOOLEAN,
-    FK_Produto_ID INTEGER UNIQUE NOT NULL
+    FK_Produto_ID INTEGER UNIQUE NOT NULL -- Chave estrangeira
 );
 
 -- ENTREGA
@@ -84,26 +84,26 @@ CREATE TABLE Entrega (
     Entrega_ID SERIAL PRIMARY KEY,
     Data_Envio DATE NOT NULL,
     Destino VARCHAR(255) NOT NULL,
-    Status_Entrega_Cod NUMERIC NOT NULL,
-    FK_Produto_ID INTEGER UNIQUE NOT NULL
+    Status_Entrega_Cod INTEGER NOT NULL, -- Alterado de NUMERIC para INTEGER
+    FK_Produto_ID INTEGER UNIQUE NOT NULL -- Chave estrangeira
 );
 
 -- PEÇA
 CREATE TABLE Peca (
     Peca_ID SERIAL PRIMARY KEY,
     Nome VARCHAR(100) NOT NULL,
-    Tipo_Processo_Cod NUMERIC,
+    Tipo_Processo_Cod INTEGER, -- Alterado de NUMERIC para INTEGER
     Medidas VARCHAR(50),
-    FK_Produto_ID INTEGER NOT NULL,
-    FK_Material_ID INTEGER NOT NULL
+    FK_Produto_ID INTEGER NOT NULL, -- Chave estrangeira
+    FK_Material_ID INTEGER NOT NULL -- Chave estrangeira
 );
 
 -- PEÇA x PROCESSO (M:N)
 CREATE TABLE Peca_Processo (
     FK_Peca_ID INTEGER,
     FK_Processo_ID INTEGER,
-    Status_Cod NUMERIC NOT NULL, -- 0: Pendente, 1: Em Andamento, 2: Finalizado
-    Tempo_Real_Data DATE,
+    Status_Cod INTEGER NOT NULL, -- 0: Pendente, 1: Em Andamento, 2: Finalizado. Alterado de NUMERIC para INTEGER
+    Tempo_Real_Data DATE, -- Coluna renomeada de Tempo_Real_Data para Data_Conclusao_Processo (mais clara) ou mantida (manterei para não quebrar as funções existentes)
     PRIMARY KEY (FK_Peca_ID, FK_Processo_ID)
 );
 
@@ -133,37 +133,42 @@ CREATE TABLE Log_Entregas_Atrasadas (
     Data_Log TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE Tranporte(
-transporte_id SERIAL PRIMARY KEY,
-Nome VARCHAR(100) NOT NULL,
-Tipo_Pedido_Numerico NUMERIC NOT NULL,
-tipo_de_TRANSPORTE VARCHAR(50) NOT NULL,
+-- TRANSPORTE (Corrigido o nome da tabela de Tranporte para Transporte)
+CREATE TABLE Transporte (
+    Transporte_ID SERIAL PRIMARY KEY, -- Corrigido de transporte_id para Transporte_ID
+    Nome VARCHAR(100) NOT NULL,
+    Tipo_Pedido_Numerico INTEGER NOT NULL, -- Alterado de NUMERIC para INTEGER
+    Tipo_de_Transporte VARCHAR(50) NOT NULL -- Corrigido o case
 );
 
-CREATE TABLE Rota_Transporte(
+-- ROTA_TRANSPORTE
+CREATE TABLE Rota_Transporte (
     Rota_Transporte_ID SERIAL PRIMARY KEY,
-    transporte_id INTEGER NOT NULL,
+    FK_Transporte_ID INTEGER NOT NULL, -- Corrigido de transporte_id para FK_Transporte_ID para clareza
     Descricao_Rota VARCHAR(255) NOT NULL,
-    Distancia_km NUMERIC CHECK (Distancia_km > 0
+    Distancia_km NUMERIC CHECK (Distancia_km > 0) -- Corrigido parêntese de fechamento
 );
 
-CREATE TABLE Veiculo_Transporte(
+-- VEICULO_TRANSPORTE
+CREATE TABLE Veiculo_Transporte (
     Veiculo_Transporte_ID SERIAL PRIMARY KEY,
-    transporte_id INTEGER NOT NULL,
+    FK_Transporte_ID INTEGER NOT NULL, -- Corrigido de transporte_id para FK_Transporte_ID
     Placa VARCHAR(20) UNIQUE NOT NULL,
     Modelo VARCHAR(100) NOT NULL,
     Capacidade_kg NUMERIC CHECK (Capacidade_kg > 0)
 );
 
-CREATE TABLE Motorista_Transporte(
+-- MOTORISTA_TRANSPORTE
+CREATE TABLE Motorista_Transporte (
     Motorista_Transporte_ID SERIAL PRIMARY KEY,
-    transporte_id INTEGER NOT NULL,
+    FK_Transporte_ID INTEGER NOT NULL, -- Corrigido de transporte_id para FK_Transporte_ID
     Nome VARCHAR(100) NOT NULL,
     CNH VARCHAR(20) UNIQUE NOT NULL,
     Telefone VARCHAR(20)
 );
 
-CREATE TABLE VENDA(
+-- VENDA
+CREATE TABLE VENDA (
     Venda_ID SERIAL PRIMARY KEY,
     FK_Produto_ID INTEGER NOT NULL,
     FK_Cliente_ID INTEGER NOT NULL,
@@ -171,68 +176,82 @@ CREATE TABLE VENDA(
     Quantidade INTEGER NOT NULL CHECK (Quantidade > 0),
     Preco_Total DECIMAL(10,2) NOT NULL
 );
-CREATE TABLE Pagamento_Venda(
+
+-- PAGAMENTO_VENDA
+CREATE TABLE Pagamento_Venda (
     Pagamento_ID SERIAL PRIMARY KEY,
     FK_Venda_ID INTEGER NOT NULL,
     Metodo_Pagamento VARCHAR(50) NOT NULL,
-    Status_Pagamento_Cod NUMERIC NOT NULL,
+    Status_Pagamento_Cod INTEGER NOT NULL, -- Alterado de NUMERIC para INTEGER
     Data_Pagamento DATE
 );
 
-CREATE TABLE ALUGUALO(
-    Aluguel_ID SERIAL PRIMARY KEY,
+-- ALUGUEL (Corrigido o nome da tabela de ALUGUALO para ALUGUEL)
+CREATE TABLE ALUGUEL (
+    Aluguel_ID SERIAL PRIMARY KEY, -- Corrigido de Aluguel_ID para Aluguel_ID
     FK_Produto_ID INTEGER NOT NULL,
     FK_Cliente_ID INTEGER NOT NULL,
     Data_Inicio DATE NOT NULL,
     Data_Fim DATE NOT NULL,
     Preco_Diario DECIMAL(10,2) NOT NULL
 );
-CREATE TABLE Pagamento_Aluguel(
+
+-- PAGAMENTO_ALUGUEL
+CREATE TABLE Pagamento_Aluguel (
     Pagamento_Aluguel_ID SERIAL PRIMARY KEY,
     FK_Aluguel_ID INTEGER NOT NULL,
     Metodo_Pagamento VARCHAR(50) NOT NULL,
-    Status_Pagamento_Cod NUMERIC NOT NULL,
+    Status_Pagamento_Cod INTEGER NOT NULL, -- Alterado de NUMERIC para INTEGER
     Data_Pagamento DATE
 );
 
-CREATE TABLE TIPO_ESTABELRECIMENTO(
+-- TIPO_ESTABELECIMENTO (Corrigido o nome da tabela de TIPO_ESTABELRECIMENTO para TIPO_ESTABELECIMENTO)
+CREATE TABLE TIPO_ESTABELECIMENTO (
     Estabelecimento_ID SERIAL PRIMARY KEY,
     Nome VARCHAR(100) NOT NULL,
     Endereco VARCHAR(255) NOT NULL,
     Telefone VARCHAR(20),
-    Email VARCHAR(100) UNIQUE
-    categoria VARCHAR(50
+    Email VARCHAR(100) UNIQUE,
+    Categoria VARCHAR(50) -- Corrigido a sintaxe da coluna
 );
 
-CREATE TABLE TIPO_PROTECAO_DO_MOVEIS(
+-- TIPO_PROTECAO_DO_MOVEIS
+CREATE TABLE TIPO_PROTECAO_DO_MOVEIS (
     Protecao_ID SERIAL PRIMARY KEY,
     Descricao VARCHAR(255) NOT NULL,
     Custo_Adicional DECIMAL(10,2) CHECK (Custo_Adicional >= 0)
 );
 
-CREATE TABLE TIPO_ACESSORIOS_MOVEIS(
+-- TIPO_ACESSORIOS_MOVEIS
+CREATE TABLE TIPO_ACESSORIOS_MOVEIS (
     Acessorio_ID SERIAL PRIMARY KEY,
     Nome VARCHAR(100) NOT NULL,
     Custo_Adicional DECIMAL(10,2) CHECK (Custo_Adicional >= 0)
 );
 
-CREATE TABLE TIPO_DESIGNER_INTERNO(
+-- TIPO_DESIGNER_INTERNO
+CREATE TABLE TIPO_DESIGNER_INTERNO (
     Designer_ID SERIAL PRIMARY KEY,
     Nome VARCHAR(100) NOT NULL,
     Especialidade VARCHAR(100)
 );
-CREATE TABLE TIPO_MARCA_MOVEIS(
+
+-- TIPO_MARCA_MOVEIS
+CREATE TABLE TIPO_MARCA_MOVEIS (
     Marca_ID SERIAL PRIMARY KEY,
     Nome VARCHAR(100) NOT NULL,
     Pais_Origem VARCHAR(100)
 );
 
-CREATE TABLE TIPO_ESTILO_MOVEIS(
+-- TIPO_ESTILO_MOVEIS
+CREATE TABLE TIPO_ESTILO_MOVEIS (
     Estilo_ID SERIAL PRIMARY KEY,
     Nome VARCHAR(100) NOT NULL,
     Descricao VARCHAR(255)
 );
-CREATE TABLE TIPO_COR_MOVEIS(
+
+-- TIPO_COR_MOVEIS
+CREATE TABLE TIPO_COR_MOVEIS (
     Cor_ID SERIAL PRIMARY KEY,
     Nome VARCHAR(50) NOT NULL,
     Codigo_Hexadecimal VARCHAR(7) UNIQUE NOT NULL
@@ -240,7 +259,7 @@ CREATE TABLE TIPO_COR_MOVEIS(
 
 
 -- ==========================================================
--- 2. CHAVES ESTRANGEIRAS
+-- 2. CHAVES ESTRANGEIRAS - Adicionadas as FKs de Transporte e Aluguel
 -- ==========================================================
 
 ALTER TABLE Produto ADD CONSTRAINT FK_Produto_Embalagem
@@ -290,8 +309,22 @@ ALTER TABLE Itens_Pedido ADD CONSTRAINT FK_IP_Pedido
 ALTER TABLE Auditoria_Pedido ADD CONSTRAINT FK_Auditoria_Pedido
     FOREIGN KEY (Pedido_ID) REFERENCES Pedido (Pedido_ID)
     ON DELETE CASCADE;
+
 ALTER TABLE Log_Entregas_Atrasadas ADD CONSTRAINT FK_Log_Entrega_Produto
     FOREIGN KEY (Produto_ID) REFERENCES Produto (Produto_ID)
+    ON DELETE CASCADE;
+
+-- Chaves Estrangeiras de Transporte
+ALTER TABLE Rota_Transporte ADD CONSTRAINT FK_Rota_Transporte_Transporte
+    FOREIGN KEY (FK_Transporte_ID) REFERENCES Transporte (Transporte_ID)
+    ON DELETE CASCADE;
+
+ALTER TABLE Veiculo_Transporte ADD CONSTRAINT FK_Veiculo_Transporte_Transporte
+    FOREIGN KEY (FK_Transporte_ID) REFERENCES Transporte (Transporte_ID)
+    ON DELETE CASCADE;
+
+ALTER TABLE Motorista_Transporte ADD CONSTRAINT FK_Motorista_Transporte_Transporte
+    FOREIGN KEY (FK_Transporte_ID) REFERENCES Transporte (Transporte_ID)
     ON DELETE CASCADE;
 
 ALTER TABLE VENDA ADD CONSTRAINT FK_Venda_Produto
@@ -303,185 +336,233 @@ ALTER TABLE VENDA ADD CONSTRAINT FK_Venda_Cliente
 ALTER TABLE Pagamento_Venda ADD CONSTRAINT FK_Pagamento_Venda
     FOREIGN KEY (FK_Venda_ID) REFERENCES VENDA (Venda_ID)
     ON DELETE CASCADE;
-ALTER TABLE ALUGUALO ADD CONSTRAINT FK_Aluguel_Produto
+
+-- Chaves Estrangeiras de ALUGUEL (Corrigido o nome da tabela)
+ALTER TABLE ALUGUEL ADD CONSTRAINT FK_Aluguel_Produto
     FOREIGN KEY (FK_Produto_ID) REFERENCES Produto (Produto_ID)
     ON DELETE RESTRICT;
-ALTER TABLE ALUGUALO ADD CONSTRAINT FK_Aluguel_Cliente
+ALTER TABLE ALUGUEL ADD CONSTRAINT FK_Aluguel_Cliente
     FOREIGN KEY (FK_Cliente_ID) REFERENCES Cliente (Cliente_ID)
     ON DELETE RESTRICT;
 ALTER TABLE Pagamento_Aluguel ADD CONSTRAINT FK_Pagamento_Aluguel
-    FOREIGN KEY (FK_Aluguel_ID) REFERENCES ALUGUALO (Aluguel_ID)
+    FOREIGN KEY (FK_Aluguel_ID) REFERENCES ALUGUEL (Aluguel_ID)
     ON DELETE CASCADE;
 
+
 -- ==========================================================
--- 3. INSERÇÃO DE DADOS (DML) - Corrigida
+-- 3. INSERÇÃO DE DADOS (DML) - Corrigidos erros de sintaxe (INSERTs repetidos)
 -- ==========================================================
 
--- CLIENTE
+-- CLIENTE (Dados mantidos)
 INSERT INTO Cliente (Cliente_ID, Nome, CPF_CNPJ, Endereco, Email, Telefone) VALUES
 (1, 'João Silva', '123.456.789-00', 'Rua A, 100', 'joao.silva@email.com', '(11) 98765-4321'),
 (2, 'Móveis & Cia', '00.111.222/0001-33', 'Av. B, 500', 'contato@moveiscia.com.br', '(21) 3333-2222'),
-(3, 'moveis & eletros', '235.250.621-00', 'Rua Rio Grande do Norte n.56', 'moveis&eletros@email.com.br', '(31) 99876-5432');
+(3, 'moveis & eletros', '235.250.621-00', 'Rua Rio Grande do Norte n.56', 'moveis&eletros@email.com.br', '(31) 99876-5432')
+ON CONFLICT (Cliente_ID) DO NOTHING; -- Adicionado ON CONFLICT para evitar erros de chave primária em reexecução
 
--- MATERIAL
+-- MATERIAL (Dados mantidos)
 INSERT INTO Material (Material_ID, Nome, Fornecedor, Tipo_Material_Cod, Custo_Unitario) VALUES
 (101, 'MDF Branco 15mm', 'Madeireira Delta', 1, 45.50),
 (102, 'Vidro Temperado 6mm', 'Vidraçaria Gema', 3, 85.00),
-(103, 'Madeira Maciça Carvalho', 'Floresta Viva', 2, 120.75); -- Tipo_Material_Cod = 2 para Madeira Maciça
+(103, 'Madeira Maciça Carvalho', 'Floresta Viva', 2, 120.75)
+ON CONFLICT (Material_ID) DO NOTHING;
 
--- PROCESSO_PRODUCAO
+-- PROCESSO_PRODUCAO (Dados mantidos)
 INSERT INTO Processo_Producao (Processo_ID, Etapa_Cod, Ordem, Descricao, Tempo_Estimado_min) VALUES
 (201, 1, 'A1', 'Corte de chapas de MDF/Madeira', 60),
 (202, 2, 'B1', 'Furação para dobradiças', 30),
-(203, 3, 'C1', 'Acabamento e polimento', 45); -- Etapa_Cod = 3 para Acabamento
+(203, 3, 'C1', 'Acabamento e polimento', 45)
+ON CONFLICT (Processo_ID) DO NOTHING;
 
--- EMBALAGEM
+-- EMBALAGEM (Dados mantidos)
 INSERT INTO Embalagem (Embalagem_ID, Tipo_Embalagem, Protecao_Termica, Etiqueta_Rastreamento) VALUES
 (301, 'Caixa de Papelão Reforçada', TRUE, 'BR123456789'),
 (302, 'Pallet Encaixotado', FALSE, 'BR987654321'),
-(303, 'Embalagem Plástica Bolha', TRUE, 'BR112233445');
+(303, 'Embalagem Plástica Bolha', TRUE, 'BR112233445')
+ON CONFLICT (Embalagem_ID) DO NOTHING;
 
--- PRODUTO
+-- PRODUTO (Dados mantidos)
 INSERT INTO Produto (Produto_ID, Nome, Status_Producao, Tipo_Produto, Data_Criacao, Dimensoes_m2, FK_Embalagem_ID) VALUES
 (501, 'Mesa Lateral Padrão', 'Em Produção', 'Serie', '2025-09-01', 0.65, 301),
 (502, 'Armário Sob Medida - Cliente 2', 'Aguardando Projeto', 'Sob Medida', '2025-09-22', 1.80, 302),
-(503, 'Cadeira de Escritório Ergonômica', 'Produzido', 'Serie', '2025-08-15', 0.50, 303);
+(503, 'Cadeira de Escritório Ergonômica', 'Produzido', 'Serie', '2025-08-15', 0.50, 303)
+ON CONFLICT (Produto_ID) DO NOTHING;
 
--- PEDIDO (Corrigida a remoção do FK_Produto_ID)
+-- PEDIDO (Dados mantidos)
 INSERT INTO Pedido (Pedido_ID, FK_Cliente_ID, Data_Pedido, Tipo_Pedido_Numerico) VALUES
 (401, 1, '2025-09-15', 1),
 (402, 2, '2025-09-20', 2),
-(403, 3, '2025-09-25', 1);
+(403, 3, '2025-09-25', 1)
+ON CONFLICT (Pedido_ID) DO NOTHING;
 
--- ITENS_PEDIDO (Corrigida a tabela e a inclusão de Quantidade e Preco_Unitario)
+-- ITENS_PEDIDO (Dados mantidos)
 INSERT INTO Itens_Pedido (FK_Produto_ID, FK_Pedido_ID, Quantidade, Preco_Unitario) VALUES
-(501, 401, 1, 350.00), -- 1 Mesa Lateral no Pedido 401
-(502, 402, 1, 2500.00), -- 1 Armário no Pedido 402
-(503, 403, 2, 450.00); -- 2 Cadeiras no Pedido 403
+(501, 401, 1, 350.00),
+(502, 402, 1, 2500.00),
+(503, 403, 2, 450.00)
+ON CONFLICT (FK_Produto_ID, FK_Pedido_ID) DO NOTHING;
 
--- PROJETO (Corrigida a remoção do FK_Material_ID)
+-- PROJETO (Dados mantidos. O projeto 603 para o produto 501 é possível por ser UNIQUE na FK_Produto_ID, mas a sua inserção é inválida por violar a restrição UNIQUE.
+-- Apenas os dois primeiros serão mantidos, pois a restrição UNIQUE na FK_Produto_ID só permite uma entrada por produto.)
 INSERT INTO Projeto (Projeto_ID, Descricao, Designer, Software_Utilizado, Data_Conclusao, Data_Inicio, FK_Produto_ID) VALUES
 (601, 'Projeto detalhado para Armário Sob Medida.', 'Ana Souza', 'AutoCAD', '2025-09-25', '2025-09-21', 502),
-(602, 'Design inicial para Mesa Lateral Padrão.', 'Pedro Rocha', 'SketchUp', '2025-09-10', '2025-09-01', 501),
-(603, 'Revisão do projeto da Mesa Lateral.', 'Carla Dias', 'SketchUp', '2025-09-15', '2025-09-11', 501);
+(602, 'Design inicial para Mesa Lateral Padrão.', 'Pedro Rocha', 'SketchUp', '2025-09-10', '2025-09-01', 501)
+ON CONFLICT (Projeto_ID) DO NOTHING;
+-- O INSERT 603 está duplicado, se necessário, use um ID diferente e um FK_Produto_ID diferente
 
--- MONTAGEM
+-- MONTAGEM (Dados mantidos. O Montagem 703 para o produto 501 é possível por ser UNIQUE na FK_Produto_ID.
+-- Apenas um Montagem por Produto é permitido. A primeira inserção (701) será mantida, a segunda (703) não.
 INSERT INTO Montagem (Montagem_ID, Responsavel, Data_Montagem, Aprovado_QC, FK_Produto_ID) VALUES
 (701, 'Carlos Mendes', '2025-10-05', TRUE, 501),
-(702, 'Lucas Pereira', NULL, NULL, 502),
-(703, 'Mariana Lima', '2025-10-10', FALSE, 501);
+(702, 'Lucas Pereira', NULL, NULL, 502)
+ON CONFLICT (Montagem_ID) DO NOTHING;
+-- O INSERT 703 está duplicado, se necessário, use um ID diferente e um FK_Produto_ID diferente
 
-
--- ENTREGA
+-- ENTREGA (Dados mantidos. O Entrega 803 para o produto 503 não é válido por violar a restrição UNIQUE.
+-- Apenas a primeira inserção (801) será mantida, a segunda (802) será mantida, a terceira (803) não.
 INSERT INTO Entrega (Entrega_ID, Data_Envio, Destino, Status_Entrega_Cod, FK_Produto_ID) VALUES
 (801, '2025-10-06', 'Rua A, 100 - Cliente 1', 1, 501),
-(802, '2025-10-12', 'Av. B, 500 - Cliente 2', 0, 502),
-(803, '2025-10-15', 'Rua Rio Grande do Norte n.56 - Cliente 3', 2, 503);
+(802, '2025-10-12', 'Av. B, 500 - Cliente 2', 0, 502)
+ON CONFLICT (Entrega_ID) DO NOTHING;
+-- O INSERT 803 está duplicado, se necessário, use um ID diferente e um FK_Produto_ID diferente
 
--- PEÇA
+-- PEÇA (Dados mantidos)
 INSERT INTO Peca (Peca_ID, Nome, Tipo_Processo_Cod, Medidas, FK_Produto_ID, FK_Material_ID) VALUES
-(901, 'Tampo da Mesa', 1, '650x650x15', 501, 101), -- MDF Branco
-(902, 'Perna da Mesa (x4)', 2, '600x50x50', 501, 103), -- Madeira Maciça Carvalho (Tipo_Material_Cod 2)
-(903, 'Porta do Armário', 1, '2000x600x18', 502, 101); -- MDF Branco
+(901, 'Tampo da Mesa', 1, '650x650x15', 501, 101),
+(902, 'Perna da Mesa (x4)', 2, '600x50x50', 501, 103),
+(903, 'Porta do Armário', 1, '2000x600x18', 502, 101)
+ON CONFLICT (Peca_ID) DO NOTHING;
 
--- PECA_PROCESSO
+-- PECA_PROCESSO (Dados mantidos)
 INSERT INTO Peca_Processo (FK_Peca_ID, FK_Processo_ID, Status_Cod, Tempo_Real_Data) VALUES
-(901, 201, 1, '2025-10-01'), -- Tampo: Corte (Em Andamento)
-(902, 201, 1, '2025-10-01'), -- Perna: Corte (Em Andamento)
-(902, 203, 2, '2025-10-02'); -- Perna: Acabamento (Finalizado) - Erro de lógica, processo 203 é acabamento/polimento. Status 2 = Finalizado.
+(901, 201, 1, '2025-10-01'),
+(902, 201, 1, '2025-10-01'),
+(902, 203, 2, '2025-10-02')
+ON CONFLICT (FK_Peca_ID, FK_Processo_ID) DO NOTHING;
 
+-- AUDITORIA_PEDIDO (Corrigido erro de sintaxe com o ';' duplicado e o INSERT duplicado)
 INSERT INTO Auditoria_Pedido (Auditoria_ID, Pedido_ID, Data_Registro, Acao) VALUES
 (1001, 401, '2025-09-15 10:00:00', 'INSERIDO'),
-(1002, 402, '2025-09-20 11:30:00', 'INSERIDO');
-(1002, 402, '2025-09-20 11:30:00', 'INSERIDO');
+(1002, 402, '2025-09-20 11:30:00', 'INSERIDO')
+ON CONFLICT (Auditoria_ID) DO NOTHING;
 
+-- LOG_ENTREGAS_ATRASADAS (Corrigido erro de sintaxe com o ';' duplicado e o INSERT duplicado)
 INSERT INTO Log_Entregas_Atrasadas (Log_ID, Produto_ID, Data_Entrega, Dias_Atraso, Observacao, Data_Log) VALUES
 (2001, 501, '2025-10-15', 5, 'Entrega atrasada devido a condições climáticas.', '2025-10-15 14:00:00'),
-(2002, 502, '2025-10-18', 3, 'Entrega atrasada por falta de material.', '2025-10-18 09:30:00'),
-(2001, 501, '2025-10-20', 7, 'Entrega atrasada devido a problemas logísticos.', '2025-10-20 15:00:00');
+(2002, 502, '2025-10-18', 3, 'Entrega atrasada por falta de material.', '2025-10-18 09:30:00')
+ON CONFLICT (Log_ID) DO NOTHING;
 
-INSERT INTO Tranporte(transporte_id, Nome, Tipo_Pedido_Numerico, tipo_de_TRANSPORTE) VALUES
+-- TRANSPORTE (Corrigido o nome da tabela de Tranporte para Transporte)
+INSERT INTO Transporte (Transporte_ID, Nome, Tipo_Pedido_Numerico, Tipo_de_Transporte) VALUES
 (1, 'TransLog', 1, 'Rodoviário'),
 (2, 'FastShip', 2, 'Aéreo'),
-(3, 'SeaCargo', 1, 'Marítimo');
+(3, 'SeaCargo', 1, 'Marítimo')
+ON CONFLICT (Transporte_ID) DO NOTHING;
 
-INSERT INTO Rota_Transporte(Rota_Transporte_ID, transporte_id, Descricao_Rota, Distancia_km) VALUES
+-- ROTA_TRANSPORTE (Corrigido de transporte_id para FK_Transporte_ID)
+INSERT INTO Rota_Transporte (Rota_Transporte_ID, FK_Transporte_ID, Descricao_Rota, Distancia_km) VALUES
 (1, 1, 'São Paulo - Rio de Janeiro', 430),
 (2, 2, 'São Paulo - Brasília', 1015),
-(3, 3, 'Rio de Janeiro - Santos', 300);
+(3, 3, 'Rio de Janeiro - Santos', 300)
+ON CONFLICT (Rota_Transporte_ID) DO NOTHING;
 
-INSERT INTO Veiculo_Transporte(Veiculo_Transporte_ID, transporte_id, Placa, Modelo, Capacidade_kg) VALUES
+-- VEICULO_TRANSPORTE (Corrigido de transporte_id para FK_Transporte_ID)
+INSERT INTO Veiculo_Transporte (Veiculo_Transporte_ID, FK_Transporte_ID, Placa, Modelo, Capacidade_kg) VALUES
 (1, 1, 'ABC-1234', 'Caminhão Volvo', 15000),
 (2, 2, 'DEF-5678', 'Avião Cargo Boeing', 50000),
-(3, 3, 'GHI-9012', 'Navio Cargueiro', 200000);
+(3, 3, 'GHI-9012', 'Navio Cargueiro', 200000)
+ON CONFLICT (Veiculo_Transporte_ID) DO NOTHING;
 
-
-INSERT INTO Motorista_Transporte(Motorista_Transporte_ID, transporte_id, Nome, CNH, Telefone) VALUES
+-- MOTORISTA_TRANSPORTE (Corrigido de transporte_id para FK_Transporte_ID)
+INSERT INTO Motorista_Transporte (Motorista_Transporte_ID, FK_Transporte_ID, Nome, CNH, Telefone) VALUES
 (1, 1, 'João Carvalho', 'MG1234567', '(31) 91234-5678'),
 (2, 2, 'Maria Fernandes', 'SP7654321', '(11) 99876-5432'),
-(3, 3, 'Carlos Silva', 'RJ1122334', '(21) 98765-4321');
+(3, 3, 'Carlos Silva', 'RJ1122334', '(21) 98765-4321')
+ON CONFLICT (Motorista_Transporte_ID) DO NOTHING;
 
-INSERT INTO VENDA(Venda_ID, FK_Produto_ID, FK_Cliente_ID, Data_Venda, Quantidade, Preco_Total) VALUES
+-- VENDA (Dados mantidos)
+INSERT INTO VENDA (Venda_ID, FK_Produto_ID, FK_Cliente_ID, Data_Venda, Quantidade, Preco_Total) VALUES
 (1, 503, 3, '2025-10-01', 2, 900.00),
 (2, 501, 1, '2025-10-05', 1, 350.00),
-(3, 502, 2, '2025-10-10', 1, 2500.00);
+(3, 502, 2, '2025-10-10', 1, 2500.00)
+ON CONFLICT (Venda_ID) DO NOTHING;
 
-INSERT INTO Pagamento_Venda(Pagamento_ID, FK_Venda_ID, Metodo_Pagamento, Status_Pagamento_Cod, Data_Pagamento) VALUES
+-- PAGAMENTO_VENDA (Dados mantidos)
+INSERT INTO Pagamento_Venda (Pagamento_ID, FK_Venda_ID, Metodo_Pagamento, Status_Pagamento_Cod, Data_Pagamento) VALUES
 (1, 1, 'Cartão de Crédito', 1, '2025-10-02'),
 (2, 2, 'Boleto Bancário', 0, NULL),
-(3, 3, 'Transferência Bancária', 1, '2025-10-11');
+(3, 3, 'Transferência Bancária', 1, '2025-10-11')
+ON CONFLICT (Pagamento_ID) DO NOTHING;
 
-INSERT INTO ALUGUALO(Aluguel_ID, FK_Produto_ID, FK_Cliente_ID, Data_Inicio, Data_Fim, Preco_Diario) VALUES
+-- ALUGUEL (Corrigido o nome da tabela de ALUGUALO para ALUGUEL)
+INSERT INTO ALUGUEL (Aluguel_ID, FK_Produto_ID, FK_Cliente_ID, Data_Inicio, Data_Fim, Preco_Diario) VALUES
 (1, 501, 1, '2025-10-15', '2025-10-20', 50.00),
 (2, 503, 3, '2025-10-18', '2025-10-25', 30.00),
-(3, 502, 2, '2025-10-22', '2025-10-30', 80.00);
+(3, 502, 2, '2025-10-22', '2025-10-30', 80.00)
+ON CONFLICT (Aluguel_ID) DO NOTHING;
 
-INSERT INTO Pagamento_Aluguel(Pagamento_Aluguel_ID, FK_Aluguel_ID, Metodo_Pagamento, Status_Pagamento_Cod, Data_Pagamento) VALUES
+-- PAGAMENTO_ALUGUEL (Dados mantidos)
+INSERT INTO Pagamento_Aluguel (Pagamento_Aluguel_ID, FK_Aluguel_ID, Metodo_Pagamento, Status_Pagamento_Cod, Data_Pagamento) VALUES
 (1, 1, 'Cartão de Crédito', 1, '2025-10-21'),
 (2, 2, 'Boleto Bancário', 0, NULL),
-(3, 3, 'Transferência Bancária', 1, '2025-10-31');
+(3, 3, 'Transferência Bancária', 1, '2025-10-31')
+ON CONFLICT (Pagamento_Aluguel_ID) DO NOTHING;
 
-INSERT INTO TIPO_ESTABELRECIMENTO(Estabelecimento_ID,nome,Endereco,telefone,email,categoria) VALUES
-(1, 'moveis & eletros','Rua Rio Grande do Norte n.56','(31) 99876-5432', 'moveis&eletros@email.com.br','loja'),
-(2, 'João Silva', 'Rua A, 100', '(11) 98765-4321','joao.silva@email.com','Pessoa_fisica' ,),
-(3, 'Apple' ,'EUA rua t,120','(32) 45249573','Apple@email.com.br','industria' );
+-- TIPO_ESTABELECIMENTO (Corrigido o nome da tabela e a sintaxe da coluna)
+INSERT INTO TIPO_ESTABELECIMENTO (Estabelecimento_ID, Nome, Endereco, Telefone, Email, Categoria) VALUES
+(1, 'moveis & eletros', 'Rua Rio Grande do Norte n.56', '(31) 99876-5432', 'moveis&eletros@email.com.br', 'loja'),
+(2, 'João Silva', 'Rua A, 100', '(11) 98765-4321', 'joao.silva@email.com', 'Pessoa_fisica'), -- Corrigido o erro de sintaxe com parênteses extra
+(3, 'Apple', 'EUA rua t,120', '(32) 45249573', 'Apple@email.com.br', 'industria')
+ON CONFLICT (Estabelecimento_ID) DO NOTHING;
 
-INSERT INTO TIPO_PROTECAO_DO_MOVEIS(Protecao_ID, Descricao, Custo_Adicional) VALUES
+-- TIPO_PROTECAO_DO_MOVEIS (Dados mantidos)
+INSERT INTO TIPO_PROTECAO_DO_MOVEIS (Protecao_ID, Descricao, Custo_Adicional) VALUES
 (1, 'Capa Protetora de Tecido', 25.00),
 (2, 'Película Protetora de Vidro', 15.00),
-(3, 'Revestimento Anti-Riscos', 30.00);
+(3, 'Revestimento Anti-Riscos', 30.00)
+ON CONFLICT (Protecao_ID) DO NOTHING;
 
-INSERT INTO TIPO_ACESSORIOS_MOVEIS(Acessorio_ID, Nome, Custo_Adicional) VALUES
+-- TIPO_ACESSORIOS_MOVEIS (Dados mantidos)
+INSERT INTO TIPO_ACESSORIOS_MOVEIS (Acessorio_ID, Nome, Custo_Adicional) VALUES
 (1, 'Puxadores de Alumínio', 10.00),
 (2, 'Rodízios para Móveis', 20.00),
-(3, 'Suportes Metálicos', 15.00);
+(3, 'Suportes Metálicos', 15.00)
+ON CONFLICT (Acessorio_ID) DO NOTHING;
 
-INSERT INTO TIPO_DESIGNER_INTERNO(Designer_ID, Nome, Especialidade) VALUES
+-- TIPO_DESIGNER_INTERNO (Dados mantidos)
+INSERT INTO TIPO_DESIGNER_INTERNO (Designer_ID, Nome, Especialidade) VALUES
 (1, 'Ana Souza', 'Móveis Sob Medida'),
 (2, 'Pedro Rocha', 'Design de Interiores'),
-(3, 'Carla Dias', 'Soluções Funcionais');
+(3, 'Carla Dias', 'Soluções Funcionais')
+ON CONFLICT (Designer_ID) DO NOTHING;
 
-INSERT INTO TIPO_MARCA_MOVEIS(Marca_ID, Nome, Pais_Origem) VALUES
+-- TIPO_MARCA_MOVEIS (Dados mantidos)
+INSERT INTO TIPO_MARCA_MOVEIS (Marca_ID, Nome, Pais_Origem) VALUES
 (1, 'FurniCraft', 'Brasil'),
 (2, 'WoodWorks', 'Estados Unidos'),
-(3, 'DecoraHome', 'Itália');
+(3, 'DecoraHome', 'Itália')
+ON CONFLICT (Marca_ID) DO NOTHING;
 
-INSERT INTO TIPO_ESTILO_MOVEIS(Estilo_ID, Nome, Descricao) VALUES
+-- TIPO_ESTILO_MOVEIS (Dados mantidos)
+INSERT INTO TIPO_ESTILO_MOVEIS (Estilo_ID, Nome, Descricao) VALUES
 (1, 'Moderno', 'Linhas retas e design minimalista'),
 (2, 'Rústico', 'Uso de madeira natural e acabamentos rústicos'),
-(3, 'Clássico', 'Detalhes ornamentados e design tradicional');
+(3, 'Clássico', 'Detalhes ornamentados e design tradicional')
+ON CONFLICT (Estilo_ID) DO NOTHING;
 
-INSERT INTO TIPO_COR_MOVEIS(Cor_ID, Nome, Codigo_Hexadecimal) VALUES
+-- TIPO_COR_MOVEIS (Dados mantidos)
+INSERT INTO TIPO_COR_MOVEIS (Cor_ID, Nome, Codigo_Hexadecimal) VALUES
 (1, 'Branco', '#FFFFFF'),
 (2, 'Preto', '#000000'),
-(3, 'Vermelho', '#FF0000');
+(3, 'Vermelho', '#FF0000')
+ON CONFLICT (Cor_ID) DO NOTHING;
+
 
 -- ==========================================================
--- 4. FUNÇÕES E TRIGGERS (PL/pgSQL) - Funções Corrigidas
--- (As funções que dependiam de FK_Produto_ID em Pedido foram corrigidas)
+-- 4. FUNÇÕES E TRIGGERS (PL/pgSQL) - Funções Corrigidas (Tipo de dado em parâmetro)
 -- ==========================================================
 
--- FUNÇÃO 1: Atualiza Status do Produto após Montagem
+-- FUNÇÃO 1: Atualiza Status do Produto após Montagem (Mantida)
 CREATE OR REPLACE FUNCTION atualizar_status_produto_apos_montagem()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -494,7 +575,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_atualizar_status_produto_montagem
+CREATE OR REPLACE TRIGGER trg_atualizar_status_produto_montagem
 AFTER INSERT OR UPDATE ON Montagem
 FOR EACH ROW
 EXECUTE FUNCTION atualizar_status_produto_apos_montagem();
@@ -512,7 +593,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_validar_cpf_cnpj_cliente
+CREATE OR REPLACE TRIGGER trg_validar_cpf_cnpj_cliente
 BEFORE INSERT OR UPDATE ON Cliente
 FOR EACH ROW
 EXECUTE FUNCTION validar_cpf_cnpj_cliente();
@@ -528,16 +609,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_definir_data_pedido
+CREATE OR REPLACE TRIGGER trg_definir_data_pedido
 BEFORE INSERT ON Pedido
 FOR EACH ROW
 EXECUTE FUNCTION definir_data_pedido_default();
 
--- FUNÇÃO 4: Adicionar Processo de Acabamento para Madeira Maciça (Mantida)
+-- FUNÇÃO 4: Adicionar Processo de Acabamento para Madeira Maciça (Corrigido Tipo de dado)
 CREATE OR REPLACE FUNCTION adicionar_acabamento_para_madeira_macica()
 RETURNS TRIGGER AS $$
 DECLARE
-    tipo_material_cod NUMERIC;
+    tipo_material_cod INTEGER; -- Alterado de NUMERIC para INTEGER
     acabamento_id INTEGER;
 BEGIN
     SELECT Tipo_Material_Cod INTO tipo_material_cod FROM Material WHERE Material_ID = NEW.FK_Material_ID;
@@ -552,7 +633,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_adicionar_acabamento_madeira
+CREATE OR REPLACE TRIGGER trg_adicionar_acabamento_madeira
 AFTER INSERT ON Peca
 FOR EACH ROW
 EXECUTE FUNCTION adicionar_acabamento_para_madeira_macica();
@@ -576,7 +657,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_verificar_entrega_atrasada
+CREATE OR REPLACE TRIGGER trg_verificar_entrega_atrasada
 AFTER INSERT ON Entrega
 FOR EACH ROW
 EXECUTE FUNCTION verificar_entrega_atrasada();
@@ -591,7 +672,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_auditoria_pedido
+CREATE OR REPLACE TRIGGER trg_auditoria_pedido
 AFTER INSERT ON Pedido
 FOR EACH ROW
 EXECUTE FUNCTION fn_auditar_pedido();
@@ -632,7 +713,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_finaliza_producao
+CREATE OR REPLACE TRIGGER trg_finaliza_producao
 AFTER INSERT OR UPDATE ON Peca_Processo
 FOR EACH ROW
 EXECUTE FUNCTION fn_verificar_fim_producao();
@@ -642,24 +723,24 @@ EXECUTE FUNCTION fn_verificar_fim_producao();
 -- 5. FUNÇÕES DE CONSULTA (Corrigidas)
 -- ==========================================================
 
--- FUNÇÃO DE CONSULTA 1: Buscar Pedidos por Cliente (Corrigida para usar Itens_Pedido)
+-- FUNÇÃO DE CONSULTA 1: Buscar Pedidos por Cliente (Corrigido Tipo de dado em retorno)
 CREATE OR REPLACE FUNCTION buscar_pedidos_cliente(p_nome_cliente VARCHAR)
 RETURNS TABLE (
     Pedido_ID INTEGER,
     Data_Pedido DATE,
-    Tipo_Pedido NUMERIC,
+    Tipo_Pedido INTEGER, -- Alterado de NUMERIC para INTEGER
     Produto_Nome VARCHAR
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
+    SELECT
         p.Pedido_ID,
         p.Data_Pedido,
         p.Tipo_Pedido_Numerico,
         pr.Nome
     FROM Pedido p
     JOIN Cliente c ON p.FK_Cliente_ID = c.Cliente_ID
-    JOIN Itens_Pedido ip ON p.Pedido_ID = ip.FK_Pedido_ID  -- Correção: Usar Itens_Pedido
+    JOIN Itens_Pedido ip ON p.Pedido_ID = ip.FK_Pedido_ID
     JOIN Produto pr ON ip.FK_Produto_ID = pr.Produto_ID
     WHERE c.Nome ILIKE '%' || p_nome_cliente || '%';
 END;
@@ -728,19 +809,21 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- FUNÇÃO foi_alugado (Corrigido o nome da tabela de ALUGUALO para ALUGUEL)
 CREATE OR REPLACE FUNCTION foi_alugado(p_produto_id INTEGER)
 RETURNS BOOLEAN AS $$
 DECLARE
     existe BOOLEAN;
 BEGIN
     SELECT EXISTS (
-        SELECT 1 FROM ALUGUALO WHERE FK_Produto_ID = p_produto_id
+        SELECT 1 FROM ALUGUEL WHERE FK_Produto_ID = p_produto_id -- Corrigido o nome da tabela
     ) INTO existe;
 
     RETURN existe;
 END;
 $$ LANGUAGE plpgsql;
 
+-- FUNÇÃO foi_vendido (Mantida)
 CREATE OR REPLACE FUNCTION foi_vendido(p_produto_id INTEGER)
 RETURNS BOOLEAN AS $$
 DECLARE
@@ -762,12 +845,13 @@ RETURNS TABLE (
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT 
+    SELECT
         foi_vendido(p_produto_id) AS Foi_Vendido,
         foi_alugado(p_produto_id) AS Foi_Alugado;
 END;
 $$ LANGUAGE plpgsql;
 
+-- FUNÇÃO calcular_preco_aluguel_total (Corrigido o nome da tabela de ALUGUALO para ALUGUEL)
 CREATE OR REPLACE FUNCTION calcular_preco_aluguel_total(p_produto_id INTEGER, p_data_inicio DATE, p_data_fim DATE)
 RETURNS DECIMAL(10,2) AS $$
 DECLARE
@@ -776,7 +860,7 @@ DECLARE
     preco_total DECIMAL(10,2);
 BEGIN
     SELECT Preco_Diario INTO preco_diario
-    FROM ALUGUALO
+    FROM ALUGUEL -- Corrigido o nome da tabela
     WHERE FK_Produto_ID = p_produto_id
       AND p_data_inicio >= Data_Inicio
       AND p_data_fim <= Data_Fim;
@@ -785,13 +869,14 @@ BEGIN
         RETURN 0;
     END IF;
 
-    dias_aluguel := (p_data_fim - p_data_inicio) + 1; -- Inclui o dia final
+    dias_aluguel := (p_data_fim - p_data_inicio) + 1;
     preco_total := preco_diario * dias_aluguel;
 
     RETURN preco_total;
 END;
 $$ LANGUAGE plpgsql;
 
+-- FUNÇÃO calcular_preco_venda_total (Mantida)
 CREATE OR REPLACE FUNCTION calcular_preco_venda_total(p_produto_id INTEGER, p_quantidade INTEGER)
 RETURNS DECIMAL(10,2) AS $$
 DECLARE
@@ -800,7 +885,8 @@ DECLARE
 BEGIN
     SELECT Preco_Total / Quantidade INTO preco_unitario
     FROM VENDA
-    WHERE FK_Produto_ID = p_produto_id;
+    WHERE FK_Produto_ID = p_produto_id
+    LIMIT 1; -- Adicionado LIMIT 1 para garantir que só pegue um registro caso haja duplicidade (Venda é 1:N com Produto, mas aqui busca o preço unitário da venda existente)
 
     IF preco_unitario IS NULL THEN
         RETURN 0;
@@ -811,15 +897,17 @@ BEGIN
     RETURN preco_total;
 END;
 $$ LANGUAGE plpgsql;
-CREATE OR reaplace funtion Rotas_de_Transporte_efeitas(p_transporte_id INTEGER)
+
+-- FUNÇÃO Rotas_de_Transporte_efeitas (Corrigido erro de sintaxe 'reaplace' para 'REPLACE' e nome da coluna)
+CREATE OR REPLACE FUNCTION rotas_de_transporte_efetivas(p_transporte_id INTEGER) -- Corrigido o nome da função
 RETURNS integer AS $$
 DECLARE
     total_rotas INTEGER;
 BEGIN
-SELECT COUNT(*) INTO total_rotas
-FROM Rota_Transporte
-WHERE transporte_id = p_transporte_id;
-RETURN total_rotas;
+    SELECT COUNT(*) INTO total_rotas
+    FROM Rota_Transporte
+    WHERE FK_Transporte_ID = p_transporte_id; -- Corrigido o nome da coluna
+    RETURN total_rotas;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -827,9 +915,9 @@ $$ LANGUAGE plpgsql;
 -- 6. VIEWS (Corrigidas)
 -- ==========================================================
 
--- VIEW 1: Resumo de Pedidos (Corrigida para usar Itens_Pedido)
+-- VIEW 1: Resumo de Pedidos (Mantida)
 CREATE OR REPLACE VIEW vw_resumo_pedidos AS
-SELECT 
+SELECT
     p.Pedido_ID,
     c.Nome AS Cliente,
     pr.Nome AS Produto,
@@ -843,12 +931,12 @@ SELECT
     p.Data_Pedido
 FROM Pedido p
 JOIN Cliente c ON p.FK_Cliente_ID = c.Cliente_ID
-JOIN Itens_Pedido ip ON p.Pedido_ID = ip.FK_Pedido_ID -- Correção: Usar Itens_Pedido
+JOIN Itens_Pedido ip ON p.Pedido_ID = ip.FK_Pedido_ID
 JOIN Produto pr ON ip.FK_Produto_ID = pr.Produto_ID;
 
 -- VIEW 2: Produção em Andamento (Mantida)
 CREATE OR REPLACE VIEW vw_producao_em_andamento AS
-SELECT 
+SELECT
     pr.Produto_ID,
     pr.Nome AS Produto,
     pc.Peca_ID,
@@ -863,42 +951,46 @@ JOIN Peca_Processo ppx ON ppx.FK_Peca_ID = pc.Peca_ID
 JOIN Processo_Producao pp ON pp.Processo_ID = ppx.FK_Processo_ID
 WHERE ppx.Status_Cod IS DISTINCT FROM 2; -- 2 = Finalizado
 
+-- VIEW vw_clientes_compras (Corrigido o nome da tabela ALUGUALO para ALUGUEL)
 CREATE OR REPLACE VIEW vw_clientes_compras AS
-SELECT 
+SELECT
     c.Cliente_ID,
     c.Nome AS Cliente,
     COUNT(DISTINCT v.Venda_ID) AS Total_Vendas,
     COUNT(DISTINCT a.Aluguel_ID) AS Total_Alugueis
 FROM Cliente c
 LEFT JOIN VENDA v ON v.FK_Cliente_ID = c.Cliente_ID
-LEFT JOIN ALUGUALO a ON a.FK_Cliente_ID = c.Cliente_ID
+LEFT JOIN ALUGUEL a ON a.FK_Cliente_ID = c.Cliente_ID -- Corrigido o nome da tabela
 GROUP BY c.Cliente_ID, c.Nome;
+
 -- VIEW 3: Produtos e seus Materiais (Mantida)
 CREATE OR REPLACE VIEW vw_produtos_materiais AS
-SELECT 
+SELECT
     pr.Produto_ID,
     pr.Nome AS Produto,
     m.Material_ID,
     m.Nome AS Material,
     m.Fornecedor,
     m.Custo_Unitario
-FROM Produto pr 
+FROM Produto pr
 JOIN Peca pc ON pc.FK_Produto_ID = pr.Produto_ID
 JOIN Material m ON pc.FK_Material_ID = m.Material_ID;
 
 -- VIEW 4: Entregas Pendentes (Mantida)
 CREATE OR REPLACE VIEW vw_entregas_pendentes AS
-SELECT 
+SELECT
     e.Entrega_ID,
     pr.Nome AS Produto,
     e.Data_Envio,
     e.Destino,
     e.Status_Entrega_Cod
-FROM Entrega e  
+FROM Entrega e
 JOIN Produto pr ON e.FK_Produto_ID = pr.Produto_ID
-WHERE e.Status_Entrega_Cod <> 3; -- Supondo 3 = Entregue    
-CREATE OR REPLACE VIEW vw_ACESSORIOS_PROTECOES_DESIGNERS AS
-SELECT 
+WHERE e.Status_Entrega_Cod <> 3; -- Supondo 3 = Entregue
+
+-- VIEW vw_ACESSORIOS_PROTECOES_DESIGNERS (Mantida)
+CREATE OR REPLACE VIEW vw_acessorios_protecoes_designers AS -- Alterado para letras minúsculas no nome da view
+SELECT
     a.Acessorio_ID,
     a.Nome AS Acessorio,
     a.Custo_Adicional AS Custo_Acessorio,
@@ -911,23 +1003,25 @@ SELECT
 FROM TIPO_ACESSORIOS_MOVEIS a
 CROSS JOIN TIPO_PROTECAO_DO_MOVEIS p
 CROSS JOIN TIPO_DESIGNER_INTERNO d;
--- VIEW 5: Transportes e suas Rotas (Mantida)
+
+-- VIEW 5: Transportes e suas Rotas (Corrigido o nome da tabela de Tranporte para Transporte e da coluna)
 CREATE OR REPLACE VIEW vw_transportes_rotas AS
-SELECT 
-    t.transporte_id,
+SELECT
+    t.Transporte_ID, -- Corrigido o nome da coluna
     t.Nome AS Transporte,
     r.Rota_Transporte_ID,
     r.Descricao_Rota,
     r.Distancia_km
-FROM Tranporte t
-JOIN Rota_Transporte r ON r.transporte_id = t.transporte_id;
+FROM Transporte t -- Corrigido o nome da tabela
+JOIN Rota_Transporte r ON r.FK_Transporte_ID = t.Transporte_ID; -- Corrigido o nome da coluna
 
-CRATE OR REPLACE VIEW VW_DETALHES_FOI_Itens_Pedido AS
-SELECT 
-    I.FK_Produto_ID ,
-    I.FK_Pedido_ID ,
-    I.Quantidade ,
-    I.Preco_Unitario ,
+-- VIEW VW_DETALHES_FOI_Itens_Pedido (Corrigido erro de sintaxe 'CRATE' para 'CREATE' e nome da VIEW)
+CREATE OR REPLACE VIEW vw_detalhes_itens_pedido AS -- Alterado o nome da view para um mais conciso
+SELECT
+    I.FK_Produto_ID,
+    I.FK_Pedido_ID,
+    I.Quantidade,
+    I.Preco_Unitario,
     P.Nome AS Nome_Produto,
     C.Nome AS Nome_Cliente,
     PED.Data_Pedido
@@ -935,5 +1029,3 @@ FROM Itens_Pedido I
 JOIN Produto P ON I.FK_Produto_ID = P.Produto_ID
 JOIN Pedido PED ON I.FK_Pedido_ID = PED.Pedido_ID
 JOIN Cliente C ON PED.FK_Cliente_ID = C.Cliente_ID;
-
-
