@@ -8,8 +8,8 @@
 CREATE TABLE Embalagem (
     Embalagem_ID SERIAL PRIMARY KEY,
     Tipo_Embalagem VARCHAR(50) NOT NULL,
-    Protecao_Termica BOOLEAN DEFAULT FALSE,
-    Etiqueta_Rastreamento VARCHAR(50) UNIQUE
+    Protecao_Termica BOOLEAN DEFAULT FALSE,-- default FALSE para indicar se há proteção térmica
+    Etiqueta_Rastreamento VARCHAR(50) UNIQUE--unique para evitar etiquetas duplicadas
 );
 
 -- MATERIAL
@@ -18,7 +18,7 @@ CREATE TABLE Material (
     Nome VARCHAR(100) NOT NULL,
     Fornecedor VARCHAR(100),
     Tipo_Material_Cod INTEGER NOT NULL, -- Alterado de NUMERIC para INTEGER (assumindo códigos inteiros)
-    Custo_Unitario DECIMAL(10,2) NOT NULL CHECK (Custo_Unitario >= 0)
+    Custo_Unitario DECIMAL(10,2) NOT NULL CHECK (Custo_Unitario >= 0)-- Custo não pode ser negativo
 );
 
 -- PRODUTO
@@ -28,7 +28,7 @@ CREATE TABLE Produto (
     Status_Producao VARCHAR(50) NOT NULL,
     Tipo_Produto VARCHAR(20),
     Data_Criacao DATE DEFAULT CURRENT_DATE,
-    Dimensoes_m2 NUMERIC(10,2) CHECK (Dimensoes_m2 > 0),
+    Dimensoes_m2 NUMERIC(10,2) CHECK (Dimensoes_m2 > 0),--check para dimensões positivas
     FK_Embalagem_ID INTEGER -- Chave estrangeira
 );
 
@@ -254,7 +254,7 @@ CREATE TABLE TIPO_ESTILO_MOVEIS (
 CREATE TABLE TIPO_COR_MOVEIS (
     Cor_ID SERIAL PRIMARY KEY,
     Nome VARCHAR(50) NOT NULL,
-    Codigo_Hexadecimal VARCHAR(7) UNIQUE NOT NULL
+    Codigo_Hexadecimal VARCHAR(7) UNIQUE NOT NULL--unique not null para evitar códigos duplicados 
 );
 
 
@@ -400,7 +400,7 @@ INSERT INTO Itens_Pedido (FK_Produto_ID, FK_Pedido_ID, Quantidade, Preco_Unitari
 (501, 401, 1, 350.00),
 (502, 402, 1, 2500.00),
 (503, 403, 2, 450.00)
-ON CONFLICT (FK_Produto_ID, FK_Pedido_ID) DO NOTHING;
+ON CONFLICT (FK_Produto_ID, FK_Pedido_ID) DO NOTHING;-- Adicionado ON CONFLICT para evitar erros de chave primária em reexecução
 
 -- PROJETO (Dados mantidos. O projeto 603 para o produto 501 é possível por ser UNIQUE na FK_Produto_ID, mas a sua inserção é inválida por violar a restrição UNIQUE.
 -- Apenas os dois primeiros serão mantidos, pois a restrição UNIQUE na FK_Produto_ID só permite uma entrada por produto.)
@@ -563,7 +563,7 @@ ON CONFLICT (Cor_ID) DO NOTHING;
 -- ==========================================================
 
 -- FUNÇÃO 1: Atualiza Status do Produto após Montagem (Mantida)
-CREATE OR REPLACE FUNCTION atualizar_status_produto_apos_montagem()
+CREATE OR REPLACE FUNCTION atualizar_status_produto_apos_montagem() --função atualiza o status do produto para 'Montado' quando a montagem é aprovada pelo controle de qualidade
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.Aprovado_QC = TRUE THEN
@@ -575,7 +575,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER trg_atualizar_status_produto_montagem
+CREATE OR REPLACE TRIGGER trg_atualizar_status_produto_montagem --triigger que chama a função após inserção ou atualização na tabela Montagem
 AFTER INSERT OR UPDATE ON Montagem
 FOR EACH ROW
 EXECUTE FUNCTION atualizar_status_produto_apos_montagem();
@@ -585,17 +585,17 @@ CREATE OR REPLACE FUNCTION validar_cpf_cnpj_cliente()
 RETURNS TRIGGER AS $$
 BEGIN
     IF EXISTS (
-        SELECT 1 FROM Cliente WHERE CPF_CNPJ = NEW.CPF_CNPJ AND Cliente_ID != NEW.Cliente_ID
+        SELECT 1 FROM Cliente WHERE CPF_CNPJ = NEW.CPF_CNPJ AND Cliente_ID != NEW.Cliente_ID-- Evita conflito ao atualizar o mesmo registro
     ) THEN
-        RAISE EXCEPTION 'CPF/CNPJ "%" já está cadastrado.', NEW.CPF_CNPJ;
+        RAISE EXCEPTION 'CPF/CNPJ "%" já está cadastrado.', NEW.CPF_CNPJ;-- Mensagem de erro personalizada
     END IF;
-    RETURN NEW;
+    RETURN NEW;-- Retorna o novo registro se a validação passar
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE TRIGGER trg_validar_cpf_cnpj_cliente
-BEFORE INSERT OR UPDATE ON Cliente
-FOR EACH ROW
+BEFORE INSERT OR UPDATE ON Cliente --before insert or update na tabela Cliente
+FOR EACH ROW -- Trigger para validar CPF/CNPJ antes de inserir ou atualizar um cliente
 EXECUTE FUNCTION validar_cpf_cnpj_cliente();
 
 -- FUNÇÃO 3: Definir data de pedido default (Mantida)
@@ -603,7 +603,7 @@ CREATE OR REPLACE FUNCTION definir_data_pedido_default()
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.Data_Pedido IS NULL THEN
-        NEW.Data_Pedido := CURRENT_DATE;
+        NEW.Data_Pedido := CURRENT_DATE;-- Define a data atual como data do pedido se não for fornecida
     END IF;
     RETURN NEW;
 END;
@@ -612,11 +612,11 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE TRIGGER trg_definir_data_pedido
 BEFORE INSERT ON Pedido
 FOR EACH ROW
-EXECUTE FUNCTION definir_data_pedido_default();
+EXECUTE FUNCTION definir_data_pedido_default();-- Trigger para definir a data do pedido como a data atual se não for fornecida
 
 -- FUNÇÃO 4: Adicionar Processo de Acabamento para Madeira Maciça (Corrigido Tipo de dado)
 CREATE OR REPLACE FUNCTION adicionar_acabamento_para_madeira_macica()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER AS $$--trrigger que adiciona automaticamente o processo de acabamento para peças feitas de madeira maciça
 DECLARE
     tipo_material_cod INTEGER; -- Alterado de NUMERIC para INTEGER
     acabamento_id INTEGER;
@@ -888,7 +888,7 @@ BEGIN
     WHERE FK_Produto_ID = p_produto_id
     LIMIT 1; -- Adicionado LIMIT 1 para garantir que só pegue um registro caso haja duplicidade (Venda é 1:N com Produto, mas aqui busca o preço unitário da venda existente)
 
-    IF preco_unitario IS NULL THEN
+    IF preco_unitario IS NULL THEN--is null then evitar erro caso produto não tenha sido vendido
         RETURN 0;
     END IF;
 
